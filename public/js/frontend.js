@@ -19,7 +19,7 @@ const frontEndPlayers = {}
 const frontEndProjectiles = {}
 
 const backgroundImage = new Image()
-backgroundImage.src = '/img/resume.png'
+backgroundImage.src = '/img/resume.svg'
 
 socket.on('updateProjectiles', (backEndProjectiles) => {
   for (const id in backEndProjectiles) {
@@ -131,9 +131,7 @@ socket.on('updatePlayers', (backEndPlayers) => {
 let animationId
 let backgroundOffsetX = 0
 let backgroundOffsetY = 0
-const backgroundImageWidth = 1700
-const backgroundImageHeight = 2200
-const bufferDistance = 1
+const bufferDistance = 5
 const SPEED = 5
 function animate() {
   animationId = requestAnimationFrame(animate)
@@ -142,52 +140,55 @@ function animate() {
 
   // Update background position based on player's position near canvas borders
   const player = frontEndPlayers[socket.id]
+  let backgroundAspectRatio = backgroundImage.width / backgroundImage.height;
+  const scaledCanvasWidth = canvas.width / devicePixelRatio;
+  const scaledCanvasHeight = canvas.height / devicePixelRatio;
+
   if (player) {
     // Right border
-    if (keys.d.pressed && (player.x > (canvas.width - player.radius - bufferDistance))) {
-      if (backgroundOffsetX > -(backgroundImageWidth - canvas.width)) {
-        backgroundOffsetX -= SPEED
+    if (keys.d.pressed && player.x > (scaledCanvasWidth - player.radius - bufferDistance)) {
+      if (backgroundOffsetX > -(backgroundImage.width - scaledCanvasWidth)) {
+        backgroundOffsetX -= SPEED;
       }
-      player.x = canvas.width - player.radius - bufferDistance // Keep player at the buffer zone
+      player.x = scaledCanvasWidth - player.radius - bufferDistance; // Keep player at the buffer zone
     }
 
     // Left border
-    if (keys.a.pressed && (player.x < (player.radius + bufferDistance))) {
+    if (keys.a.pressed && player.x < (player.radius + bufferDistance)) {
       if (backgroundOffsetX < 0) {
-        backgroundOffsetX += SPEED
+        backgroundOffsetX += SPEED;
       }
-      player.x = player.radius + bufferDistance // Keep player at the buffer zone
+      player.x = player.radius + bufferDistance; // Keep player at the buffer zone
     }
 
     // Bottom border
-    if (keys.s.pressed && (player.y > (canvas.height - player.radius - bufferDistance))) {
-      if (backgroundOffsetY > -(backgroundImageHeight - canvas.height)) {
-        backgroundOffsetY -= SPEED
+    if (keys.s.pressed && player.y > (scaledCanvasHeight - player.radius - bufferDistance)) {
+      if (backgroundOffsetY > -((backgroundImage.height / backgroundAspectRatio) - scaledCanvasHeight)) {
+        backgroundOffsetY -= SPEED;
       }
-      player.y = canvas.height - player.radius - bufferDistance // Keep player at the buffer zone
+      player.y = scaledCanvasHeight - player.radius - bufferDistance; // Keep player at the buffer zone
     }
 
     // Top border
-    if (keys.w.pressed && (player.y < (player.radius + bufferDistance))) {
+    if (keys.w.pressed && player.y < (player.radius + bufferDistance)) {
       if (backgroundOffsetY < 0) {
-        backgroundOffsetY += SPEED
+        backgroundOffsetY += SPEED;
       }
-      player.y = player.radius + bufferDistance // Keep player at the buffer zone
+      player.y = player.radius + bufferDistance; // Keep player at the buffer zone
     }
   }
 
   // Draw the background image with the updated offset
-  c.drawImage(backgroundImage, backgroundOffsetX, backgroundOffsetY, backgroundImageWidth, backgroundImageHeight)
+  const drawHeight = canvas.width / backgroundAspectRatio / devicePixelRatio;
+  c.drawImage(backgroundImage, backgroundOffsetX, backgroundOffsetY, canvas.width / devicePixelRatio, drawHeight);
 
   for (const id in frontEndPlayers) {
     const frontEndPlayer = frontEndPlayers[id]
 
     // linear interpolation
     if (frontEndPlayer.target) {
-      frontEndPlayers[id].x +=
-        (frontEndPlayers[id].target.x - frontEndPlayers[id].x) * 0.5
-      frontEndPlayers[id].y +=
-        (frontEndPlayers[id].target.y - frontEndPlayers[id].y) * 0.5
+      frontEndPlayers[id].x += (frontEndPlayers[id].target.x - frontEndPlayers[id].x) * 0.5
+      frontEndPlayers[id].y += (frontEndPlayers[id].target.y - frontEndPlayers[id].y) * 0.5
     }
 
     frontEndPlayer.draw()
