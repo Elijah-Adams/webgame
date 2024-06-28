@@ -129,8 +129,8 @@ socket.on('updatePlayers', (backEndPlayers) => {
 })
 
 let animationId
-let backgroundOffsetX = 1
-let backgroundOffsetY = 1
+let backgroundOffsetX = 0
+let backgroundOffsetY = 0
 const backgroundImageWidth = 1700
 const backgroundImageHeight = 2200
 const bufferDistance = 1
