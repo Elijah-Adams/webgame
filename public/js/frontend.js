@@ -18,6 +18,9 @@ const y = canvas.height / 2
 const frontEndPlayers = {}
 const frontEndProjectiles = {}
 
+const backgroundImage = new Image()
+backgroundImage.src = '/img/resume.png'
+
 socket.on('updateProjectiles', (backEndProjectiles) => {
   for (const id in backEndProjectiles) {
     const backEndProjectile = backEndProjectiles[id]
@@ -126,10 +129,55 @@ socket.on('updatePlayers', (backEndPlayers) => {
 })
 
 let animationId
+let backgroundOffsetX = 1
+let backgroundOffsetY = 1
+const backgroundImageWidth = 1700
+const backgroundImageHeight = 2200
+const bufferDistance = 1
+const SPEED = 5
 function animate() {
   animationId = requestAnimationFrame(animate)
   // c.fillStyle = 'rgba(0, 0, 0, 0.1)'
   c.clearRect(0, 0, canvas.width, canvas.height)
+
+  // Update background position based on player's position near canvas borders
+  const player = frontEndPlayers[socket.id]
+  if (player) {
+    // Right border
+    if (keys.d.pressed && (player.x > (canvas.width - player.radius - bufferDistance))) {
+      if (backgroundOffsetX > -(backgroundImageWidth - canvas.width)) {
+        backgroundOffsetX -= SPEED
+      }
+      player.x = canvas.width - player.radius - bufferDistance // Keep player at the buffer zone
+    }
+
+    // Left border
+    if (keys.a.pressed && (player.x < (player.radius + bufferDistance))) {
+      if (backgroundOffsetX < 0) {
+        backgroundOffsetX += SPEED
+      }
+      player.x = player.radius + bufferDistance // Keep player at the buffer zone
+    }
+
+    // Bottom border
+    if (keys.s.pressed && (player.y > (canvas.height - player.radius - bufferDistance))) {
+      if (backgroundOffsetY > -(backgroundImageHeight - canvas.height)) {
+        backgroundOffsetY -= SPEED
+      }
+      player.y = canvas.height - player.radius - bufferDistance // Keep player at the buffer zone
+    }
+
+    // Top border
+    if (keys.w.pressed && (player.y < (player.radius + bufferDistance))) {
+      if (backgroundOffsetY < 0) {
+        backgroundOffsetY += SPEED
+      }
+      player.y = player.radius + bufferDistance // Keep player at the buffer zone
+    }
+  }
+
+  // Draw the background image with the updated offset
+  c.drawImage(backgroundImage, backgroundOffsetX, backgroundOffsetY, backgroundImageWidth, backgroundImageHeight)
 
   for (const id in frontEndPlayers) {
     const frontEndPlayer = frontEndPlayers[id]
@@ -173,7 +221,6 @@ const keys = {
   }
 }
 
-const SPEED = 5
 const playerInputs = []
 let sequenceNumber = 0
 setInterval(() => {
